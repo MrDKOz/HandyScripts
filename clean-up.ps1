@@ -23,18 +23,22 @@ if ($fileCount.Count -gt 0)
     # Loop each file - handy to see what was removed after the fact
     foreach ($file in $files)
     {
-        # Show the currently focused file
-        Write-Host '>'$file
-
-        try
-        { 
-            # Actually remove the file
-            Remove-Item -Path $directory'\'$file
-            Write-Host '>> Removed file successfully'
-        }
-        catch
+        # Check if the file exists (we may have already removed its parent)
+        if([System.IO.File]::Exists($file.FullName))
         {
-            Write-Error 'Failed to remove file'
+            # File found, write out the file name and path
+            Write-Host '>'$file.FullName
+
+            # Attempt to remove the file, if we can't write out an error
+            try
+            { 
+                Remove-Item -Path $file.FullName -Recurse -Force -Confirm:$false
+                Write-Host '>> Removed file successfully'
+            }
+            catch
+            {
+                Write-Error 'Failed to remove file'
+            }
         }
     }
 }
